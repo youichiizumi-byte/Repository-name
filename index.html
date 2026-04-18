@@ -303,7 +303,7 @@ async function callAI(prompt, responseContainer, btnEl) {
   area.scrollIntoView({behavior:'smooth',block:'nearest'});
 
   try{
-    var res=await fetch('/chat',{
+    var res=await fetch('/chat.js',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
