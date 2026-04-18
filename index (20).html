@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>『営業科学』コックピット</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic',sans-serif;background:#f8f7f4;color:#1a1a18;min-height:100vh;}
+.wrap{max-width:760px;margin:0 auto;padding:1.5rem 1rem;}
+.top-bar{display:flex;align-items:flex-start;justify-content:space-between;padding:1rem 0 1.25rem;border-bottom:0.5px solid #d3d1c7;margin-bottom:1.5rem;}
+.top-bar h1{font-size:20px;font-weight:500;}
+.top-bar p{font-size:12px;color:#5f5e5a;margin-top:3px;}
+.badge{font-size:10px;padding:3px 8px;background:#E6F1FB;color:#185FA5;border-radius:10px;font-weight:500;}
+.sec{display:none;}.sec.on{display:block;}
+.nav-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.25rem;}
+@media(max-width:500px){.nav-grid{grid-template-columns:repeat(2,1fr);}}
+.nc{border:0.5px solid #d3d1c7;border-radius:12px;padding:1rem 1.1rem;cursor:pointer;background:#fff;}
+.nc:hover{border-color:#185FA5;background:#E6F1FB;}
+.nc-icon{font-size:20px;margin-bottom:6px;}
+.nc-title{font-size:13px;font-weight:500;}
+.nc-desc{font-size:11px;color:#5f5e5a;margin-top:3px;line-height:1.4;}
+.nc-status{font-size:10px;margin-top:6px;padding:2px 6px;border-radius:8px;display:inline-block;background:#f1efe8;color:#5f5e5a;}
+.hint-card{background:#f1efe8;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem;}
+.hint-card p{font-size:13px;color:#5f5e5a;line-height:1.7;}
+.hint-card strong{font-weight:500;color:#1a1a18;}
+.tool-header{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;}
+.bk{padding:6px 12px;font-size:12px;border:0.5px solid #b4b2a9;border-radius:8px;cursor:pointer;background:#fff;color:#5f5e5a;}
+.bk:hover{background:#f1efe8;}
+.tool-header h2{font-size:16px;font-weight:500;}
+.card{background:#fff;border:0.5px solid #d3d1c7;border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.ttl{font-size:15px;font-weight:500;margin-bottom:4px;}
+.sub{font-size:13px;color:#5f5e5a;margin-bottom:1.25rem;}
+.btn{padding:9px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;border:0.5px solid #b4b2a9;background:#fff;color:#1a1a18;font-family:inherit;}
+.btn:hover{background:#f1efe8;}
+.btn.prim{background:#185FA5;border-color:#185FA5;color:#fff;}
+.btn.prim:hover{background:#0C447C;}
+.btn.prim:disabled{background:#888;border-color:#888;cursor:not-allowed;}
+.bnav{display:flex;justify-content:space-between;align-items:center;margin-top:1.5rem;}
+.sl{font-size:12px;color:#5f5e5a;margin-bottom:6px;margin-top:1.25rem;}
+.sl:first-child{margin-top:0;}
+.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;}
+.si{padding:10px 12px;border:0.5px solid #d3d1c7;border-radius:8px;cursor:pointer;font-size:13px;line-height:1.4;}
+.si:hover{border-color:#185FA5;}
+.si.on{border-color:#185FA5;background:#E6F1FB;color:#0C447C;font-weight:500;}
+.si-s{font-size:11px;color:#5f5e5a;margin-top:2px;}
+.si.on .si-s{color:#185FA5;}
+.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-top:0.5rem;}
+.cc{border:0.5px solid #d3d1c7;border-radius:8px;padding:11px;cursor:pointer;position:relative;}
+.cc:hover{border-color:#185FA5;}
+.cc.sel{border-color:#185FA5;background:#E6F1FB;}
+.cc.sel .ct{color:#0C447C;}
+.ck{position:absolute;top:8px;right:8px;width:14px;height:14px;border:0.5px solid #b4b2a9;border-radius:3px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;color:#185FA5;}
+.cc.sel .ck{background:#185FA5;border-color:#185FA5;color:#fff;}
+.ci2{font-size:16px;margin-bottom:4px;}
+.ct{font-size:13px;font-weight:500;margin-bottom:2px;}
+.cd{font-size:11px;color:#5f5e5a;line-height:1.4;}
+
+/* 送信ボタン */
+.abtn{width:100%;text-align:left;padding:11px 14px;border:0.5px solid #b4b2a9;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;background:#fff;color:#1a1a18;display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.abtn:hover{background:#E6F1FB;border-color:#185FA5;color:#0C447C;}
+.abtn:disabled{opacity:0.5;cursor:not-allowed;}
+
+/* AIレスポンスエリア */
+.ai-response-area{margin-top:12px;display:none;}
+.ai-response-area.show{display:block;}
+.ai-loading{display:flex;align-items:center;gap:8px;padding:12px 14px;background:#f1efe8;border-radius:8px;font-size:13px;color:#5f5e5a;}
+.dot{width:6px;height:6px;border-radius:50%;background:#888;animation:blink 1.2s infinite;}
+.dot:nth-child(2){animation-delay:0.2s;}.dot:nth-child(3){animation-delay:0.4s;}
+@keyframes blink{0%,80%,100%{opacity:0.2;}40%{opacity:1;}}
+.ai-result{background:#fff;border:0.5px solid #d3d1c7;border-radius:12px;padding:1.25rem 1.5rem;}
+.ai-result-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:0.5px solid #d3d1c7;}
+.ai-avatar{width:28px;height:28px;border-radius:50%;background:#E6F1FB;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#0C447C;flex-shrink:0;}
+.ai-result-title{font-size:13px;font-weight:500;color:#185FA5;}
+.ai-result-body{font-size:13px;line-height:1.8;color:#1a1a18;white-space:pre-wrap;word-break:break-word;}
+.ai-result-body h3{font-size:14px;font-weight:500;margin:1rem 0 6px;}
+.ai-result-body strong{font-weight:500;}
+.ai-error{background:#FCEBEB;border:0.5px solid #F7C1C1;border-radius:8px;padding:12px 14px;font-size:13px;color:#A32D2D;}
+
+/* チェックリスト */
+.ptabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem;}
+.ptab{padding:6px 11px;border-radius:20px;border:0.5px solid #b4b2a9;font-size:11px;font-weight:500;cursor:pointer;color:#5f5e5a;background:#fff;}
+.ptab:hover{border-color:#185FA5;}
+.ptab.on{background:#185FA5;border-color:#185FA5;color:#fff;}
+.cl-wrap{display:flex;flex-direction:column;gap:6px;margin-bottom:1rem;}
+.cli{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:0.5px solid #d3d1c7;border-radius:8px;cursor:pointer;background:#fff;}
+.cli.done{background:#f1efe8;}
+.cli.done .cli-t{color:#5f5e5a;text-decoration:line-through;}
+.cli.done .cli-s{text-decoration:line-through;color:#888;}
+.cbox{width:20px;height:20px;border-radius:4px;border:0.5px solid #b4b2a9;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#185FA5;background:#fff;}
+.cli.done .cbox{background:#185FA5;border-color:#185FA5;color:#fff;}
+.cli-t{font-size:13px;font-weight:500;line-height:1.4;}
+.cli-s{font-size:11px;color:#5f5e5a;margin-top:3px;line-height:1.5;}
+.cli-tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;margin-top:4px;}
+.tg-must{background:#FAECE7;color:#993C1D;}.tg-tip{background:#E6F1FB;color:#185FA5;}.tg-warn{background:#FAEEDA;color:#854F0B;}
+.op-row{display:flex;justify-content:space-between;margin-bottom:5px;}
+.op-bar{height:5px;border-radius:3px;background:#d3d1c7;margin-bottom:1rem;}
+.op-fill{height:5px;border-radius:3px;background:#185FA5;transition:width 0.3s;}
+
+/* 失注分析 */
+.pc-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:0.5px solid #d3d1c7;border-radius:8px;margin-bottom:6px;cursor:pointer;}
+.pc-item:hover{border-color:#b4b2a9;}
+.pc-item.on{border-color:#E24B4A;background:#FCEBEB;}
+.pc-box{width:20px;height:20px;border-radius:4px;border:0.5px solid #b4b2a9;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;background:#fff;}
+.pc-item.on .pc-box{background:#E24B4A;border-color:#E24B4A;color:#fff;}
+.pc-label{font-size:13px;font-weight:500;}
+.pc-item.on .pc-label{color:#A32D2D;}
+.loss-box{background:#FCEBEB;border:0.5px solid #F7C1C1;border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.ctag{font-size:12px;padding:3px 10px;background:#fff;border:0.5px solid #F7C1C1;border-radius:20px;color:#A32D2D;display:inline-block;margin:3px 3px 0 0;}
+
+/* ヒアリングシート */
+.ss-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:0.5px solid #d3d1c7;}
+.ss-badge{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:500;}
+.bd-t{background:#E6F1FB;color:#0C447C;}.bd-o{background:#E1F5EE;color:#0F6E56;}.bd-r{background:#FAEEDA;color:#854F0B;}.bd-c{background:#FAECE7;color:#993C1D;}.bd-d{background:#f1efe8;color:#5f5e5a;}
+.ss-title{font-size:14px;font-weight:500;}
+.ss-desc{font-size:11px;color:#5f5e5a;margin-left:auto;}
+.q-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:0.5px solid #d3d1c7;border-radius:8px;margin-bottom:6px;background:#fff;}
+.q-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;flex-shrink:0;margin-top:1px;}
+.qn-t{background:#E6F1FB;color:#0C447C;}.qn-o{background:#E1F5EE;color:#0F6E56;}.qn-r{background:#FAEEDA;color:#854F0B;}.qn-c{background:#FAECE7;color:#993C1D;}.qn-d{background:#f1efe8;color:#5f5e5a;}
+.q-text{font-size:13px;font-weight:500;line-height:1.5;}
+.q-hint{font-size:11px;color:#5f5e5a;margin-top:3px;line-height:1.5;}
+.q-tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;margin-top:4px;}
+.ctx-bar{background:#E6F1FB;border:0.5px solid #B5D4F4;border-radius:8px;padding:10px 14px;margin-bottom:1rem;font-size:12px;color:#185FA5;}
+.ctx-bar strong{font-weight:500;color:#0C447C;}
+.ctx-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.ctx-tag2{font-size:11px;padding:2px 8px;background:#fff;border:0.5px solid #B5D4F4;border-radius:10px;color:#185FA5;}
+.sheet-section{margin-bottom:1.5rem;}.sheet-section:last-child{margin-bottom:0;}
+
+/* 自社情報 */
+.co-input{width:100%;font-size:13px;padding:8px 10px;border:0.5px solid #b4b2a9;border-radius:8px;background:#fff;color:#1a1a18;font-family:inherit;}
+.co-input:focus{outline:none;border-color:#185FA5;}
+.co-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+@media(max-width:480px){.co-grid{grid-template-columns:1fr;}}
+.co-label{font-size:12px;color:#5f5e5a;display:block;margin-bottom:5px;}
+.co-save{width:100%;padding:9px;background:#185FA5;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;}
+.co-save:hover{background:#0C447C;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="top-bar">
+  <div><h1>『営業科学』コックピット</h1><p>6つのツールを操縦する</p></div>
+  <span class="badge">6 tools</span>
+</div>
+
+<!-- ホーム -->
+<div class="sec on" id="home">
+  <div class="nav-grid" id="nav-grid"></div>
+  <div class="hint-card" style="margin-bottom:1rem;">
+    <p><strong>使い方：</strong>各ツールのボタンを押すと、<strong>その場でAIが回答を生成</strong>します。コピー&ペースト不要。</p>
+  </div>
+  <div class="card">
+    <p class="ttl" style="margin-bottom:4px;">自社情報の設定（任意）</p>
+    <p class="sub" style="margin-bottom:1rem;">入力するとすべてのツールの回答に自社情報が反映されます</p>
+    <div class="co-grid">
+      <div><label class="co-label">会社名</label><input type="text" id="co-name" class="co-input" placeholder="例：Kai Inc."/></div>
+      <div><label class="co-label">業種</label>
+        <select id="co-ind" class="co-input">
+          <option value="">選択</option><option>IT・SaaS</option><option>製造業</option><option>金融・保険</option><option>不動産</option><option>医療・ヘルスケア</option><option>コンサルティング</option><option>広告・マーケティング</option><option>小売・EC</option><option>その他</option>
+        </select>
+      </div>
+    </div>
+    <div class="co-grid">
+      <div><label class="co-label">営業メンバー数</label>
+        <select id="co-size" class="co-input">
+          <option value="">選択</option><option>1〜5名</option><option>6〜15名</option><option>16〜50名</option><option>51名以上</option>
+        </select>
+      </div>
+      <div><label class="co-label">自社HP URL</label><input type="url" id="co-url" class="co-input" placeholder="https://example.com"/></div>
+    </div>
+    <div style="margin-bottom:10px;"><label class="co-label">現在の営業課題・状況</label><textarea id="co-memo" class="co-input" style="resize:vertical;min-height:55px;" placeholder="例：新規開拓中心で受注率が低い。提案後に失注が多い。"></textarea></div>
+    <button class="co-save" id="co-save">この情報を保存してすべてのツールに反映する</button>
+    <p id="co-msg" style="font-size:11px;color:#0F6E56;text-align:center;margin-top:6px;display:none;">✅ 保存しました</p>
+  </div>
+</div>
+
+<!-- 課題診断 -->
+<div class="sec" id="t-diag">
+  <div class="tool-header"><button class="bk" id="bk-diag">← コックピットへ</button><h2>課題診断</h2></div>
+  <p class="ttl">営業の課題を選択してください</p><p class="sub">課題を選んでボタンを押すと、その場でAIが回答します</p>
+  <div class="card"><div class="cg" id="diag-grid"></div></div>
+  <div class="card"><p class="ttl" style="margin-bottom:12px;">AIに回答してもらう</p><div id="diag-btns"></div></div>
+</div>
+
+<!-- スコアカード -->
+<div class="sec" id="t-score">
+  <div class="tool-header"><button class="bk" id="bk-score">← コックピットへ</button><h2>スコアカード</h2></div>
+  <div id="score-inner"></div>
+</div>
+
+<!-- チェックリスト -->
+<div class="sec" id="t-check">
+  <div class="tool-header"><button class="bk" id="bk-check">← コックピットへ</button><h2>商談チェックリスト</h2></div>
+  <div class="op-row"><span style="font-size:13px;color:#5f5e5a;">全体完了率</span><span style="font-size:13px;font-weight:500;color:#185FA5;" id="cl-pct">0%</span></div>
+  <div class="op-bar"><div class="op-fill" id="cl-fill" style="width:0%"></div></div>
+  <div class="ptabs" id="cl-tabs"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+    <div><div style="font-size:15px;font-weight:500;" id="cl-ph-title"></div><div style="font-size:12px;color:#5f5e5a;margin-top:2px;" id="cl-ph-desc"></div></div>
+    <div style="text-align:right;"><span style="font-size:20px;font-weight:500;color:#185FA5;" id="cl-done">0</span><span style="font-size:12px;color:#5f5e5a;" id="cl-tot"> / 0</span></div>
+  </div>
+  <div class="cl-wrap" id="cl-list"></div>
+  <div style="display:flex;justify-content:flex-end;margin:0.75rem 0;"><button class="btn" id="cl-reset" style="font-size:12px;padding:6px 12px;">このフェーズをリセット</button></div>
+  <div class="card"><p class="ttl" style="margin-bottom:10px;">AIにアドバイスをもらう</p><div id="cl-abtns"></div></div>
+</div>
+
+<!-- ロールプレイ -->
+<div class="sec" id="t-rp">
+  <div class="tool-header"><button class="bk" id="bk-rp">← コックピットへ</button><h2>ロールプレイ</h2></div>
+  <p class="ttl">練習シナリオを選択</p><p class="sub">ボタンを押すとAIが顧客役を演じます</p>
+  <div class="card">
+    <div class="sl">顧客タイプ</div><div class="sg" id="rp-type"></div>
+    <div class="sl">練習フェーズ</div><div class="sg" id="rp-phase"></div>
+    <div class="sl">難易度</div><div class="sg" id="rp-diff"></div>
+  </div>
+  <div class="card"><p class="ttl" style="margin-bottom:10px;">AIに回答してもらう</p><div id="rp-btns"></div></div>
+</div>
+
+<!-- 失注分析 -->
+<div class="sec" id="t-loss">
+  <div class="tool-header"><button class="bk" id="bk-loss">← コックピットへ</button><h2>失注分析</h2></div>
+  <div class="sec on" id="loss-s1">
+    <p class="ttl">失注した案件の状況を選択</p><p class="sub">当てはまるものをタップしてください</p>
+    <div class="card">
+      <div class="sl">顧客の業種</div><div class="sg" id="loss-ind"></div>
+      <div class="sl">失注のタイミング</div><div class="sg" id="loss-timing"></div>
+      <div class="sl">顧客から伝えられた失注理由</div><div class="sg" id="loss-reason"></div>
+    </div>
+    <div class="bnav"><div></div><button class="btn prim" id="loss-btn1">次へ →</button></div>
+  </div>
+  <div class="sec" id="loss-s2">
+    <p class="ttl">各フェーズで「できていなかったこと」を選択</p><p class="sub">心当たりがあるものをすべて選んでください</p>
+    <div class="card">
+      <div style="font-size:13px;font-weight:500;color:#5f5e5a;margin-bottom:10px;">アプローチ・初回商談</div><div id="pc-approach"></div>
+      <div style="font-size:13px;font-weight:500;color:#5f5e5a;margin:1rem 0 10px;">ヒアリング</div><div id="pc-hearing"></div>
+      <div style="font-size:13px;font-weight:500;color:#5f5e5a;margin:1rem 0 10px;">提案・クロージング</div><div id="pc-proposal"></div>
+    </div>
+    <div class="bnav"><button class="btn" id="loss-btn2back">← 戻る</button><button class="btn prim" id="loss-btn2">分析結果を見る →</button></div>
+  </div>
+  <div class="sec" id="loss-s3">
+    <div id="loss-confirm"></div>
+    <div class="card"><p class="ttl" style="margin-bottom:12px;">AIに回答してもらう</p><div id="loss-abtns"></div></div>
+    <div class="bnav"><button class="btn" id="loss-btn3back">← 見直す</button><button class="btn" id="loss-re">新しい案件を分析する</button></div>
+  </div>
+</div>
+
+<!-- ヒアリングシート -->
+<div class="sec" id="t-hear">
+  <div class="tool-header"><button class="bk" id="bk-hear">← コックピットへ</button><h2>ヒアリングシート</h2></div>
+  <div class="sec on" id="hear-s1">
+    <p class="ttl">商談の基本情報を選択</p><p class="sub">顧客の状況に合わせた質問リストを生成します</p>
+    <div class="card">
+      <div class="sl">顧客の業種</div><div class="sg" id="hear-ind"></div>
+      <div class="sl">顧客の役職・立場</div><div class="sg" id="hear-role"></div>
+      <div class="sl">商談フェーズ</div><div class="sg" id="hear-phase"></div>
+      <div class="sl">想定される主な課題</div><div class="sg" id="hear-issue"></div>
+    </div>
+    <div class="bnav"><div></div><button class="btn prim" id="hear-btn1">シートを生成する →</button></div>
+  </div>
+  <div class="sec" id="hear-s2">
+    <div class="ctx-bar" id="hear-ctx"></div>
+    <div class="card" id="hear-sheet"></div>
+    <div class="card"><p class="ttl" style="margin-bottom:10px;">AIにさらに深掘りしてもらう</p><div id="hear-abtns"></div></div>
+    <div class="bnav"><button class="btn" id="hear-back">← 設定を変える</button><button class="btn" id="hear-re">新しいシートを作成する</button></div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+var SYSTEM_PROMPT='あなたは高橋浩一氏の著書「営業の科学」に精通した営業コンサルタントAIです。必ず「営業の科学」のフレームワーク（TORCモデル、MEDDICなど）を根拠として使い、明日から実行できる具体的なアクションを提示してください。回答は構造化して読みやすくしてください（見出し・箇条書きを適切に使う）。日本語で回答してください。';
+
+var co={name:'',ind:'',size:'',url:'',memo:''};
+
+document.getElementById('co-save').addEventListener('click',function(){
+  co.name=document.getElementById('co-name').value.trim();
+  co.ind=document.getElementById('co-ind').value;
+  co.size=document.getElementById('co-size').value;
+  co.url=document.getElementById('co-url').value.trim();
+  co.memo=document.getElementById('co-memo').value.trim();
+  var msg=document.getElementById('co-msg');
+  msg.style.display='block';
+  setTimeout(function(){msg.style.display='none';},3000);
+});
+
+function coCtx(){
+  var p=[];
+  if(co.name)p.push('会社名：'+co.name);
+  if(co.ind)p.push('業種：'+co.ind);
+  if(co.size)p.push('営業メンバー数：'+co.size);
+  if(co.url)p.push('自社HP：'+co.url+'（このURLの事業・サービス・特徴を考慮してください）');
+  if(co.memo)p.push('現在の課題・状況：'+co.memo);
+  return p.length?'\n\n【自社情報】\n'+p.join('\n'):'';
+}
+
+/* ===== AI呼び出し ===== */
+async function callAI(prompt, responseContainer, btnEl) {
+  btnEl.disabled=true;
+  var area=document.createElement('div');
+  area.className='ai-response-area show';
+  area.innerHTML='<div class="ai-loading"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span style="margin-left:4px;">AIが回答を生成中...</span></div>';
+  responseContainer.appendChild(area);
+  area.scrollIntoView({behavior:'smooth',block:'nearest'});
+
+  try{
+    var res=await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        system:SYSTEM_PROMPT,
+        messages:[{role:'user',content:prompt+coCtx()}]
+      })
+    });
+    var data=await res.json();
+    if(data.error){throw new Error(data.error);}
+    var text=data.content||'';
+    var formatted=text
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+      .replace(/^#{1,3} (.+)$/gm,'<strong>$1</strong>')
+      .replace(/\n/g,'<br>');
+    area.innerHTML='<div class="ai-result"><div class="ai-result-header"><div class="ai-avatar">AI</div><span class="ai-result-title">営業の科学 AIアドバイザー</span></div><div class="ai-result-body">'+formatted+'</div></div>';
+  }catch(e){
+    area.innerHTML='<div class="ai-error">エラーが発生しました：'+e.message+'<br>しばらくしてから再度お試しください。</div>';
+  }
+  btnEl.disabled=false;
+}
+
+/* ===== ナビ ===== */
+var TOOLS=[
+  {id:'diag',icon:'🔬',title:'課題診断',desc:'根本原因と改善策をAIが回答'},
+  {id:'score',icon:'📊',title:'スコアカード',desc:'8項目5段階で営業力を数値化'},
+  {id:'hear',icon:'📋',title:'ヒアリングシート',desc:'TORCモデルの質問リストを生成'},
+  {id:'check',icon:'✅',title:'商談チェックリスト',desc:'6フェーズのやるべきことをチェック'},
+  {id:'rp',icon:'🎭',title:'ロールプレイ',desc:'AIが顧客役を演じて練習'},
+  {id:'loss',icon:'📉',title:'失注分析',desc:'真因を構造化して次に活かす'}
+];
+
+function buildNav(){
+  var g=document.getElementById('nav-grid');g.innerHTML='';
+  TOOLS.forEach(function(t){
+    var d=document.createElement('div');d.className='nc';d.id='nav-'+t.id;
+    d.innerHTML='<div class="nc-icon">'+t.icon+'</div><div class="nc-title">'+t.title+'</div><div class="nc-desc">'+t.desc+'</div><span class="nc-status" id="ns-'+t.id+'">操縦する</span>';
+    d.addEventListener('click',function(){goTool(t.id);});
+    g.appendChild(d);
+  });
+}
+
+function goHome(){
+  document.querySelectorAll('.sec').forEach(function(s){s.classList.remove('on');});
+  document.getElementById('home').classList.add('on');
+  window.scrollTo(0,0);
+}
+
+function goTool(id){
+  document.querySelectorAll('.sec').forEach(function(s){s.classList.remove('on');});
+  document.getElementById('t-'+id).classList.add('on');
+  window.scrollTo(0,0);
+  if(id==='score')initScore();
+  if(id==='check')renderCl();
+  if(id==='diag')initDiag();
+  if(id==='rp')initRp();
+  if(id==='loss')initLoss();
+  if(id==='hear')initHear();
+}
+
+['diag','score','check','rp','loss','hear'].forEach(function(id){
+  document.getElementById('bk-'+id).addEventListener('click',goHome);
+});
+
+function mkAbtn(icon,text,prompt,container){
+  var wrap=document.createElement('div');
+  var btn=document.createElement('button');btn.className='abtn';
+  btn.innerHTML='<span style="font-size:16px">'+icon+'</span><span style="flex:1"><strong style="font-weight:500">'+text+'</strong></span><span style="color:#888;font-size:12px">▶</span>';
+  btn.addEventListener('click',function(){callAI(prompt,wrap,btn);});
+  wrap.appendChild(btn);
+  container.appendChild(wrap);
+}
+
+function mkSel(gridId,items,state,key){
+  var g=document.getElementById(gridId);if(!g)return;g.innerHTML='';
+  items.forEach(function(item){
+    var d=document.createElement('div');d.className='si'+(state[key]===item.k?' on':'');
+    d.innerHTML='<div>'+item.l+'</div>'+(item.s?'<div class="si-s">'+item.s+'</div>':'');
+    d.addEventListener('click',function(){state[key]=item.k;g.querySelectorAll('.si').forEach(function(x){x.classList.remove('on');});d.classList.add('on');});
+    g.appendChild(d);
+  });
+}
+
+function getL(arr,k){var f=arr.filter(function(x){return x.k===k;})[0];return f?f.l:k;}
+
+/* 課題診断 */
+var CLABELS={pipeline:'パイプライン不足',qualification:'ヒアリング不足',proposal:'提案が刺さらない',closing:'クロージング',cycle:'商談の長期化',gap:'メンバー格差',price:'価格競争',retention:'解約・維持'};
+var CDATA=[{k:'pipeline',i:'🔍',t:'パイプライン不足',d:'商談数が少ない'},{k:'qualification',i:'🎯',t:'ヒアリング不足',d:'ニーズが掴めない'},{k:'proposal',i:'📝',t:'提案が刺さらない',d:'検討しますで終わる'},{k:'closing',i:'🤝',t:'クロージング',d:'最後の一歩で失注'},{k:'cycle',i:'⏱',t:'商談の長期化',d:'意思決定が進まない'},{k:'gap',i:'📊',t:'メンバー格差',d:'再現性がない'},{k:'price',i:'💰',t:'価格競争',d:'値引きしないと受注できない'},{k:'retention',i:'🔄',t:'解約・維持',d:'解約が止まらない'}];
+var selDiag=[];
+function initDiag(){
+  var g=document.getElementById('diag-grid');g.innerHTML='';
+  CDATA.forEach(function(c){
+    var div=document.createElement('div');div.className='cc'+(selDiag.includes(c.k)?' sel':'');
+    div.innerHTML='<div class="ck">'+(selDiag.includes(c.k)?'✓':'')+'</div><div class="ci2">'+c.i+'</div><div class="ct">'+c.t+'</div><div class="cd">'+c.d+'</div>';
+    div.addEventListener('click',function(){var idx=selDiag.indexOf(c.k);if(idx===-1){selDiag.push(c.k);div.classList.add('sel');div.querySelector('.ck').textContent='✓';}else{selDiag.splice(idx,1);div.classList.remove('sel');div.querySelector('.ck').textContent='';}buildDiagBtns();});
+    g.appendChild(div);
+  });
+  buildDiagBtns();
+}
+function buildDiagBtns(){
+  var ab=document.getElementById('diag-btns');ab.innerHTML='';
+  var ct=selDiag.length>0?selDiag.map(function(k){return CLABELS[k];}).join('・'):'（課題を選択してください）';
+  var base='【営業の科学 課題診断】\n選択した課題：'+ct;
+  [{icon:'🔬',text:'根本原因と改善アクションTop3を教えてください',p:base+'\n\n①課題の根本原因、②優先改善アクションTop3（実施方法付き）、③具体的な問いかけ例を詳しく教えてください。'},
+   {icon:'🚀',text:'明日から実践できるアクションを5つ教えてください',p:base+'\n\n明日から即実践できるアクションを5つ、何を・誰が・どのタイミングで・どうやって、を明確にして教えてください。'},
+   {icon:'🗓',text:'3ヶ月の改善ロードマップを作ってください',p:base+'\n\n3ヶ月改善ロードマップを作ってください。1ヶ月目：基盤、2ヶ月目：実践、3ヶ月目：定着。各月の具体アクション・KPIも含めてください。'}
+  ].forEach(function(b){mkAbtn(b.icon,b.text,b.p,ab);});
+}
+
+/* スコアカード */
+var SCORE_ITEMS=[{k:'pipeline',label:'パイプライン構築',desc:'新規商談を継続的に生み出せているか'},{k:'hearing',label:'ヒアリング・傾聴',desc:'顧客の本音・PAINを引き出せているか'},{k:'proposal',label:'提案の質',desc:'顧客課題に刺さる提案書を作れているか'},{k:'closing',label:'クロージング力',desc:'懸念を解消し受注まで導けているか'},{k:'cycle',label:'商談管理',desc:'商談サイクルを短縮・管理できているか'},{k:'repro',label:'再現性・育成',desc:'成功パターンを言語化・共有できているか'},{k:'value',label:'価値訴求',desc:'価格でなく価値で勝負できているか'},{k:'retention',label:'顧客維持・深耕',desc:'既存顧客の維持・アップセルができているか'}];
+var scoreVals={};SCORE_ITEMS.forEach(function(i){scoreVals[i.k]=0;});
+function initScore(){
+  var el=document.getElementById('score-inner');el.innerHTML='';
+  var card=document.createElement('div');card.className='card';
+  SCORE_ITEMS.forEach(function(item){
+    var wrap=document.createElement('div');wrap.className='score-item';
+    var head=document.createElement('div');head.className='score-head';
+    var info=document.createElement('div');info.innerHTML='<div class="score-name">'+item.label+'</div><div style="font-size:11px;color:#5f5e5a;margin-top:2px;">'+item.desc+'</div>';
+    var num=document.createElement('div');num.style.cssText='font-size:20px;font-weight:500;color:#185FA5;min-width:24px;text-align:right;';num.id='sn-'+item.k;num.textContent=scoreVals[item.k]||'—';
+    head.appendChild(info);head.appendChild(num);wrap.appendChild(head);
+    var stars=document.createElement('div');stars.className='stars';stars.id='ss-'+item.k;
+    for(var v=1;v<=5;v++){(function(key,val){var s=document.createElement('div');s.className='star'+(scoreVals[key]===val?' on':'');s.textContent=val;s.addEventListener('click',function(){scoreVals[key]=val;document.getElementById('sn-'+key).textContent=val;document.querySelectorAll('#ss-'+key+' .star').forEach(function(x,i){x.classList.toggle('on',i+1===val);});buildScoreBtns();});stars.appendChild(s);})(item.k,v);}
+    wrap.appendChild(stars);
+    var lbl=document.createElement('div');lbl.className='slbl';lbl.innerHTML='<span>1 できていない</span><span>3 普通</span><span>5 できている</span>';
+    wrap.appendChild(lbl);card.appendChild(wrap);
+  });
+  el.appendChild(card);
+  var bc=document.createElement('div');bc.className='card';bc.innerHTML='<p class="ttl" style="margin-bottom:10px;">AIに回答してもらう</p>';
+  var ba=document.createElement('div');ba.id='score-abtns';bc.appendChild(ba);el.appendChild(bc);buildScoreBtns();
+}
+function buildScoreBtns(){
+  var ab=document.getElementById('score-abtns');if(!ab)return;
+  var vals=SCORE_ITEMS.map(function(i){return scoreVals[i.k]||1;});
+  var sorted=SCORE_ITEMS.map(function(item,i){return {label:item.label,score:vals[i]};}).sort(function(a,b){return a.score-b.score;});
+  var sc=SCORE_ITEMS.map(function(i){return i.label+':'+(scoreVals[i.k]||1);}).join('、');
+  var weak=sorted.slice(0,2).map(function(x){return x.label;}).join('・');
+  ab.innerHTML='';
+  [{icon:'🔬',text:'スコアに基づいた改善プランを教えてください',p:'【営業スコアカード診断】\n各項目スコア：'+sc+'\n\n改善プランを教えてください。特にスコアの低い「'+weak+'」を優先した具体的なアクションをお願いします。'},
+   {icon:'📈',text:'3ヶ月でスコアを上げるロードマップを教えてください',p:'【営業スコアカード診断】\n各項目スコア：'+sc+'\n\n3ヶ月で改善するロードマップを作ってください。月ごとの目標スコアと具体アクションを含めてください。'}
+  ].forEach(function(b){mkAbtn(b.icon,b.text,b.p,ab);});
+}
+
+/* チェックリスト */
+var CL_PHASES=[
+  {key:'approach',label:'アプローチ',desc:'最初の接点で信頼の土台を作る',items:[{t:'ターゲットの課題仮説を事前に作る',s:'「〇〇業界では△△の課題が多い」という仮説を持ってアプローチする。',tag:'must'},{t:'仮説型アプローチメッセージを使う',s:'「サービスを紹介したい」ではなく課題仮説から入る。',tag:'must'},{t:'次のアクション（日時）を提案して終わる',s:'具体的な日時を提案して商談をセットする。',tag:'must'},{t:'類似顧客の事例を1つ準備する',s:'同業種・同規模の成功事例を一言で伝えられるようにする。',tag:'tip'}]},
+  {key:'first',label:'初回商談',desc:'信頼関係と課題の輪郭を掴む',items:[{t:'冒頭でアジェンダと目的を合意する',s:'「本日は〇〇を確認させてください」と最初に目的を共有する。',tag:'must'},{t:'自社の話は全体の30%以下に抑える',s:'初回は「聞く商談」。自社説明に終始しない。',tag:'warn'},{t:'現状の業務フローと課題を引き出す',s:'「現在、〇〇はどのように対応されていますか？」と現状を把握する。',tag:'must'},{t:'次回アクションを合意して終わる',s:'「次回、具体的な提案をお持ちします。〇日はいかがでしょう？」',tag:'must'}]},
+  {key:'hearing',label:'ヒアリング',desc:'TORCモデルで本音を引き出す',items:[{t:'現状を把握する（T）',s:'「今、一番時間がかかっているのはどの部分ですか？」',tag:'must'},{t:'理想を引き出す（O）',s:'「半年後、理想的にはどういう状態になっていたいですか？」',tag:'must'},{t:'ギャップの影響を可視化する（R）',s:'「そのギャップが続くと、事業にどんな影響が出ますか？」',tag:'must'},{t:'決裁者・関係者を特定する',s:'評価者・推薦者・決裁者の三者を把握する。',tag:'must'},{t:'本音の懸念を引き出す（C）',s:'「今日の話で少し気になった点はありましたか？」を必ず聞く。',tag:'must'}]},
+  {key:'proposal',label:'提案',desc:'顧客課題起点の提案書を作る',items:[{t:'提案書の冒頭を「顧客の課題」から始める',s:'ヒアリングで得た顧客固有の言葉・数字を使う。',tag:'must'},{t:'ROI・投資対効果を数字で示す',s:'「月間〇〇万円削減」のように具体化する。',tag:'must'},{t:'提案は1案に絞る',s:'最適案1つを自信を持って提案し「なぜこれか」を語る。',tag:'must'},{t:'提案後に懸念点を全出しする',s:'「今日の内容で、気になった点はありましたか？」を必ず聞く。',tag:'must'}]},
+  {key:'closing',label:'クロージング',desc:'懸念を取り除き受注まで導く',items:[{t:'懸念点をすべてリストアップして確認する',s:'「導入に向けて懸念があるとすれば何でしょうか？」',tag:'must'},{t:'「条件付きYes」を確認する',s:'「もし〇〇が解消できれば、前向きにご検討いただけますか？」',tag:'must'},{t:'価格への反論には「条件交換」で対応する',s:'値引きではなく条件交換に持ち込む。',tag:'warn'},{t:'次のステップ（契約・稟議）を具体化する',s:'口頭合意から契約締結までの道筋を明確にする。',tag:'must'}]},
+  {key:'followup',label:'フォロー',desc:'商談後の関係を維持・深耕する',items:[{t:'商談当日中に議事録・サマリーを送る',s:'合意事項・次回アクション・懸念への回答を当日送る。',tag:'must'},{t:'次回アクションの期日を守る',s:'小さな約束を守ることが信頼の積み上げになる。',tag:'must'},{t:'社内チャンピオンの稟議をサポートする',s:'担当者が社内で説明しやすい資料を作ってあげる。',tag:'tip'},{t:'受注後も成功定義を合意する',s:'「3ヶ月後にこの状態になれば成功」というKPIを合意する。',tag:'must'}]}
+];
+var clChecks={};CL_PHASES.forEach(function(ph){clChecks[ph.key]={};ph.items.forEach(function(item,i){clChecks[ph.key][i]=false;});});
+var clCur=0;
+function clTotal(){var t=0,d=0;CL_PHASES.forEach(function(ph){ph.items.forEach(function(item,i){t++;if(clChecks[ph.key][i])d++;});});return{total:t,done:d};}
+function clPhDone(ph){var d=0;ph.items.forEach(function(item,i){if(clChecks[ph.key][i])d++;});return d;}
+function renderCl(){
+  var ph=CL_PHASES[clCur];
+  document.getElementById('cl-ph-title').textContent=ph.label;
+  document.getElementById('cl-ph-desc').textContent=ph.desc;
+  var d=clPhDone(ph);
+  document.getElementById('cl-done').textContent=d;
+  document.getElementById('cl-tot').textContent=' / '+ph.items.length;
+  var r=clTotal();var pct=Math.round(r.done/r.total*100);
+  document.getElementById('cl-pct').textContent=pct+'%';
+  document.getElementById('cl-fill').style.width=pct+'%';
+  var ns=document.getElementById('ns-check');if(ns)ns.textContent=pct>0?pct+'% 完了':'操縦する';
+  var tabs=document.getElementById('cl-tabs');tabs.innerHTML='';
+  CL_PHASES.forEach(function(p,i){var t=document.createElement('div');t.className='ptab'+(i===clCur?' on':'');t.textContent=p.label+' '+clPhDone(p)+'/'+p.items.length;t.addEventListener('click',function(){clCur=i;renderCl();});tabs.appendChild(t);});
+  var cl=document.getElementById('cl-list');cl.innerHTML='';
+  ph.items.forEach(function(item,i){
+    var isDone=clChecks[ph.key][i];var div=document.createElement('div');div.className='cli'+(isDone?' done':'');
+    var tc=item.tag==='must'?'tg-must':item.tag==='warn'?'tg-warn':'tg-tip';var tt=item.tag==='must'?'必須':item.tag==='warn'?'注意':'ポイント';
+    div.innerHTML='<div class="cbox">'+(isDone?'✓':'')+'</div><div><div class="cli-t">'+item.t+'</div><div class="cli-s">'+item.s+'</div><span class="cli-tag '+tc+'">'+tt+'</span></div>';
+    div.addEventListener('click',function(){clChecks[ph.key][i]=!clChecks[ph.key][i];renderCl();});
+    cl.appendChild(div);
+  });
+  var ab=document.getElementById('cl-abtns');ab.innerHTML='';
+  var unc=ph.items.filter(function(item,i){return !clChecks[ph.key][i];}).map(function(item){return item.t;});
+  mkAbtn('🔍','「'+ph.label+'」フェーズのアドバイスを教えてください','【商談チェックリスト】\nフェーズ：'+ph.label+'\n完了：'+d+'/'+ph.items.length+'\n未完了項目：'+(unc.join('、')||'なし')+'\n\nこのフェーズで特に重要なポイントと未完了項目の改善方法を教えてください。',ab);
+}
+document.getElementById('cl-reset').addEventListener('click',function(){CL_PHASES[clCur].items.forEach(function(item,i){clChecks[CL_PHASES[clCur].key][i]=false;});renderCl();});
+
+/* ロールプレイ */
+var rpSel={type:'',phase:'',diff:''};
+var RP_TYPES=[{k:'saas',l:'IT・SaaS',s:'情報システム部長'},{k:'mfg',l:'製造業',s:'購買部長'},{k:'consul',l:'コンサル・士業',s:'代表パートナー'},{k:'retail',l:'小売・EC',s:'事業責任者'}];
+var RP_PHASES=[{k:'approach',l:'アプローチ',s:'初回接触'},{k:'hearing',l:'ヒアリング',s:'課題引き出し'},{k:'proposal',l:'提案',s:'提案書説明'},{k:'closing',l:'クロージング',s:'懸念解消'}];
+var RP_DIFFS=[{k:'easy',l:'初級',s:'協力的な顧客'},{k:'mid',l:'中級',s:'やや懐疑的'},{k:'hard',l:'上級',s:'強い抵抗・値引き要求'}];
+function initRp(){mkSel('rp-type',RP_TYPES,rpSel,'type');mkSel('rp-phase',RP_PHASES,rpSel,'phase');mkSel('rp-diff',RP_DIFFS,rpSel,'diff');buildRpBtns();}
+function buildRpBtns(){
+  var ab=document.getElementById('rp-btns');ab.innerHTML='';
+  var s=(rpSel.type?getL(RP_TYPES,rpSel.type):'タイプ未選択')+' / '+(rpSel.phase?getL(RP_PHASES,rpSel.phase):'フェーズ未選択')+' / '+(rpSel.diff?getL(RP_DIFFS,rpSel.diff)+'難易度':'難易度未選択');
+  [{icon:'🎭',text:'顧客役として商談を開始してください',p:'【商談ロールプレイ開始】\n設定：'+s+'\n\n今すぐ顧客役として商談を開始してください。顧客の最初のセリフから始めて、私（営業担当）の発言に対してリアルに反応してください。'},
+   {icon:'💬',text:'このシナリオで使うべき質問例を教えてください',p:'【ロールプレイ準備】\n設定：'+s+'\n\nこのシナリオで使うべき具体的な問いかけ・セリフ例を5つ教えてください。'},
+   {icon:'📝',text:'このシナリオの攻略ポイントを教えてください',p:'【ロールプレイ準備】\n設定：'+s+'\n\nこのシナリオを攻略するためのポイントと注意すべき落とし穴を教えてください。'}
+  ].forEach(function(b){mkAbtn(b.icon,b.text,b.p,ab);});
+}
+
+/* 失注分析 */
+var lossSel={ind:'',timing:'',reason:''};var failedPhases=[];
+var LOSS_IND=[{k:'saas',l:'IT・SaaS',s:'情報システム'},{k:'mfg',l:'製造業',s:'購買・調達'},{k:'consul',l:'コンサル',s:'代表・パートナー'},{k:'retail',l:'小売・EC',s:'事業責任者'},{k:'other',l:'その他',s:''}];
+var LOSS_TIMING=[{k:'early',l:'初回商談後',s:'提案前に終了'},{k:'proposal',l:'提案書提出後',s:'検討中に失注'},{k:'closing',l:'クロージング段階',s:'最終局面で失注'},{k:'long',l:'長期停滞後',s:'3ヶ月以上経過'}];
+var LOSS_REASON=[{k:'price',l:'価格が高い',s:'予算・コスト'},{k:'competitor',l:'他社を選んだ',s:'競合比較で負け'},{k:'notyet',l:'今は必要ない',s:'タイミング問題'},{k:'internal',l:'社内都合',s:'予算凍結・人事'},{k:'unknown',l:'理由不明',s:'返事がなくなった'}];
+var PC_ITEMS={approach:[{t:'仮説なくアプローチした',k:'a1'},{t:'自社サービスの説明から入った',k:'a2'},{t:'次回アクションを合意できなかった',k:'a3'},{t:'担当者の権限を確認しなかった',k:'a4'}],hearing:[{t:'顧客のPAINを深掘りできなかった',k:'h1'},{t:'決裁者を特定できていなかった',k:'h2'},{t:'本音の懸念を引き出せなかった',k:'h3'},{t:'導入スケジュール・予算を確認しなかった',k:'h4'},{t:'競合・現在の解決策を把握しなかった',k:'h5'}],proposal:[{t:'提案書が自社紹介になっていた',k:'p1'},{t:'ROIを数字で示せなかった',k:'p2'},{t:'複数案を出して顧客を迷わせた',k:'p3'},{t:'提案後に懸念点を引き出せなかった',k:'p4'},{t:'クロージングで条件付きYesを確認しなかった',k:'p5'},{t:'社内チャンピオンを育てられなかった',k:'p6'}]};
+function initLoss(){
+  lossSel={ind:'',timing:'',reason:''};failedPhases=[];
+  mkSel('loss-ind',LOSS_IND,lossSel,'ind');mkSel('loss-timing',LOSS_TIMING,lossSel,'timing');mkSel('loss-reason',LOSS_REASON,lossSel,'reason');
+  ['loss-s1','loss-s2','loss-s3'].forEach(function(id){document.getElementById(id).classList.remove('on');});
+  document.getElementById('loss-s1').classList.add('on');
+}
+function buildPcSection(ph,containerId){
+  var el=document.getElementById(containerId);el.innerHTML='';
+  PC_ITEMS[ph].forEach(function(item){
+    var div=document.createElement('div');div.className='pc-item'+(failedPhases.includes(item.k)?' on':'');
+    div.innerHTML='<div class="pc-box">'+(failedPhases.includes(item.k)?'✗':'')+'</div><div><div class="pc-label">'+item.t+'</div></div>';
+    div.addEventListener('click',function(){var idx=failedPhases.indexOf(item.k);if(idx===-1){failedPhases.push(item.k);div.classList.add('on');div.querySelector('.pc-box').textContent='✗';}else{failedPhases.splice(idx,1);div.classList.remove('on');div.querySelector('.pc-box').textContent='';}});
+    el.appendChild(div);
+  });
+}
+function lossGoSub(n){['loss-s1','loss-s2','loss-s3'].forEach(function(id){document.getElementById(id).classList.remove('on');});document.getElementById('loss-s'+n).classList.add('on');}
+document.getElementById('loss-btn1').addEventListener('click',function(){
+  if(!lossSel.ind)lossSel.ind='other';if(!lossSel.timing)lossSel.timing='proposal';if(!lossSel.reason)lossSel.reason='unknown';
+  buildPcSection('approach','pc-approach');buildPcSection('hearing','pc-hearing');buildPcSection('proposal','pc-proposal');lossGoSub(2);
+});
+document.getElementById('loss-btn2back').addEventListener('click',function(){lossGoSub(1);});
+document.getElementById('loss-btn2').addEventListener('click',function(){
+  var allFailed=[];Object.keys(PC_ITEMS).forEach(function(ph){PC_ITEMS[ph].forEach(function(item){if(failedPhases.includes(item.k))allFailed.push(item.t);});});
+  var box=document.getElementById('loss-confirm');
+  var tags=[getL(LOSS_IND,lossSel.ind),getL(LOSS_TIMING,lossSel.timing),'失注理由：'+getL(LOSS_REASON,lossSel.reason)].map(function(t){return '<span class="ctag">'+t+'</span>';}).join('');
+  var ftags=allFailed.map(function(t){return '<span class="ctag">'+t+'</span>';}).join('');
+  box.innerHTML='<div class="loss-box"><div style="font-size:12px;font-weight:500;color:#A32D2D;margin-bottom:6px;">失注案件の分析サマリー</div><p style="font-size:16px;font-weight:500;color:#791F1F;margin-bottom:8px;">特定された問題点：'+allFailed.length+'項目</p>'+tags+'<div style="margin-top:10px;padding-top:10px;border-top:0.5px solid #F7C1C1;font-size:12px;color:#A32D2D;margin-bottom:6px;">できていなかったこと</div>'+ftags+'</div>';
+  var ab=document.getElementById('loss-abtns');ab.innerHTML='';
+  var sc=allFailed.join('、')||'特になし';
+  var base='【失注分析】\n業種：'+getL(LOSS_IND,lossSel.ind)+'\n失注タイミング：'+getL(LOSS_TIMING,lossSel.timing)+'\n表面的な失注理由：'+getL(LOSS_REASON,lossSel.reason)+'\nできていなかった項目：'+sc;
+  [{icon:'🔍',text:'失注の真因と再発防止策を教えてください',p:base+'\n\n①この失注の真の原因②次の商談で同じ失敗をしないための具体的な改善アクションを教えてください。'},
+   {icon:'💬',text:'次の商談で使うべき問いかけを教えてください',p:base+'\n\n次の商談で必ず使うべき具体的な問いかけ・セリフ例を教えてください。'},
+   {icon:'📊',text:'組織的な再発防止策を教えてください',p:base+'\n\n同様の失注が繰り返されている場合、どのような組織的な対策（プロセス・育成・評価）を取るべきか教えてください。'}
+  ].forEach(function(b){mkAbtn(b.icon,b.text,b.p,ab);});
+  lossGoSub(3);
+});
+document.getElementById('loss-btn3back').addEventListener('click',function(){lossGoSub(2);});
+document.getElementById('loss-re').addEventListener('click',function(){initLoss();});
+
+/* ヒアリングシート */
+var hearSel={ind:'',role:'',phase:'',issue:''};
+var HEAR_IND=[{k:'saas',l:'IT・SaaS',s:'DX・システム'},{k:'mfg',l:'製造業',s:'生産・調達・品質'},{k:'consul',l:'コンサル・士業',s:'案件獲得・人材'},{k:'retail',l:'小売・EC',s:'売上・在庫・CX'},{k:'other',l:'その他',s:''}];
+var HEAR_ROLE=[{k:'exec',l:'経営者・役員',s:'意思決定者'},{k:'mgr',l:'部長・マネージャー',s:'推薦者・評価者'},{k:'staff',l:'担当者・リーダー',s:'実務・評価者'},{k:'it',l:'情報システム部門',s:'技術評価者'}];
+var HEAR_PHASE=[{k:'first',l:'初回商談',s:'初めての接触'},{k:'second',l:'2回目以降',s:'課題の深掘り'},{k:'proposal',l:'提案前',s:'提案書作成の準備'},{k:'closing',l:'クロージング前',s:'最終懸念の確認'}];
+var HEAR_ISSUE=[{k:'cost',l:'コスト削減',s:'費用・効率化'},{k:'sales',l:'売上向上',s:'新規・既存拡大'},{k:'ops',l:'業務効率化',s:'工数・ミス削減'},{k:'hr',l:'人材・育成',s:'採用・定着・スキル'},{k:'dx',l:'DX・デジタル化',s:'システム・自動化'},{k:'unknown',l:'まだ不明',s:'ヒアリングで特定'}];
+var HEAR_SECTIONS=[
+  {id:'t',badge:'T',bdCls:'bd-t',qnCls:'qn-t',title:'現状把握（Theory）',desc:'全体像を掴む',qs:[{q:'現在、一番時間・コストがかかっているのはどの業務ですか？',h:'数字で把握する（週何時間・月いくら）',tag:'must'},{q:'その業務は何名くらいが関わっていますか？',h:'工数の規模感を把握する',tag:'must'},{q:'競合他社と比べてこの点はどのくらいの水準にありますか？',h:'差し迫り感を確認する',tag:'tip'}]},
+  {id:'o',badge:'O',bdCls:'bd-o',qnCls:'qn-o',title:'理想の状態（Outcome）',desc:'ゴールを引き出す',qs:[{q:'半年〜1年後、理想的にはどういう状態になっていたいですか？',h:'具体的な数値目標を引き出す',tag:'must'},{q:'その状態が実現できれば、事業にどんなプラスの影響がありますか？',h:'GAINを言語化させる',tag:'must'},{q:'社内でこのテーマはどのくらい優先度が高いですか？',h:'温度感・緊急性を確認する',tag:'tip'}]},
+  {id:'r',badge:'R',bdCls:'bd-r',qnCls:'qn-r',title:'ギャップの影響（Risk）',desc:'現状維持のコストを語らせる',qs:[{q:'そのギャップが1年後も続いていたとしたら、事業にどんな影響が出そうですか？',h:'最重要質問。顧客自身に語らせる',tag:'must'},{q:'今のやり方を続けることで、機会損失や見えにくいコストはありますか？',h:'現状維持のリスクを顕在化させる',tag:'must'}]},
+  {id:'d',badge:'決',bdCls:'bd-d',qnCls:'qn-d',title:'意思決定・関係者の把握',desc:'商談を進めるために必須',qs:[{q:'この導入を進める場合、意思決定に関わる方は他にいらっしゃいますか？',h:'決裁者・評価者・推薦者の三者を把握',tag:'must'},{q:'もし進める場合、いつ頃の導入をイメージされていますか？',h:'タイムラインと予算サイクルを確認',tag:'must'},{q:'今、同様のテーマで他社さんとも話されていますか？',h:'競合状況を自然に確認する',tag:'tip'}]},
+  {id:'c',badge:'C',bdCls:'bd-c',qnCls:'qn-c',title:'懸念の引き出し（Concern）',desc:'言わなかった本音を確認する',qs:[{q:'今日の話を聞いて、少し気になった点や不安な点はありましたか？',h:'商談末に必ず使う。本音の懸念を表面化',tag:'must'},{q:'過去に同様のソリューションを検討した経験はありますか？',h:'過去の失敗・懸念の源泉を探る',tag:'tip'}]}
+];
+function initHear(){
+  mkSel('hear-ind',HEAR_IND,hearSel,'ind');mkSel('hear-role',HEAR_ROLE,hearSel,'role');mkSel('hear-phase',HEAR_PHASE,hearSel,'phase');mkSel('hear-issue',HEAR_ISSUE,hearSel,'issue');
+  document.getElementById('hear-s1').classList.add('on');document.getElementById('hear-s2').classList.remove('on');
+}
+function buildHearSheet(){
+  if(!hearSel.ind)hearSel.ind='other';if(!hearSel.role)hearSel.role='mgr';if(!hearSel.phase)hearSel.phase='first';if(!hearSel.issue)hearSel.issue='unknown';
+  var ctx=document.getElementById('hear-ctx');
+  var tags=[getL(HEAR_IND,hearSel.ind),getL(HEAR_ROLE,hearSel.role),getL(HEAR_PHASE,hearSel.phase),getL(HEAR_ISSUE,hearSel.issue)].map(function(t){return '<span class="ctx-tag2">'+t+'</span>';}).join('');
+  ctx.innerHTML='<strong>生成されたヒアリングシート</strong><div class="ctx-tags">'+tags+'</div>';
+  var area=document.getElementById('hear-sheet');area.innerHTML='';
+  HEAR_SECTIONS.forEach(function(sec){
+    var div=document.createElement('div');div.className='sheet-section';
+    var head=document.createElement('div');head.className='ss-head';
+    head.innerHTML='<span class="ss-badge '+sec.bdCls+'">'+sec.badge+'</span><span class="ss-title">'+sec.title+'</span><span class="ss-desc">'+sec.desc+'</span>';
+    div.appendChild(head);
+    sec.qs.forEach(function(q,i){
+      var qd=document.createElement('div');qd.className='q-item';
+      var tc=q.tag==='must'?'tg-must':'tg-tip';var tt=q.tag==='must'?'必須':'ポイント';
+      qd.innerHTML='<div class="q-num '+sec.qnCls+'">'+(i+1)+'</div><div><div class="q-text">'+q.q+'</div><div class="q-hint">'+q.h+'</div><span class="q-tag '+tc+'">'+tt+'</span></div>';
+      div.appendChild(qd);
+    });
+    area.appendChild(div);
+  });
+  var ab=document.getElementById('hear-abtns');ab.innerHTML='';
+  var setting=getL(HEAR_IND,hearSel.ind)+' / '+getL(HEAR_ROLE,hearSel.role)+' / '+getL(HEAR_PHASE,hearSel.phase)+' / 課題：'+getL(HEAR_ISSUE,hearSel.issue);
+  [{icon:'🎯',text:'この顧客に特化した追加質問を教えてください',p:'【ヒアリングシート追加質問】\n設定：'+setting+'\n\nこの顧客に特化した追加のヒアリング質問を5つ教えてください。'},
+   {icon:'💬',text:'顧客が話したがらない場合の切り返し方を教えてください',p:'【ヒアリング対策】\n設定：'+setting+'\n\n顧客がPAINを話したがらない場合の想定回答パターンと切り返し方を教えてください。'},
+   {icon:'📝',text:'商談後の議事録テンプレートを作ってください',p:'【議事録テンプレート】\n設定：'+setting+'\n\nヒアリング商談後に記録すべき項目（PAIN・理想・ギャップ・決裁者・懸念・次回アクション）を網羅した議事録テンプレートを作ってください。'}
+  ].forEach(function(b){mkAbtn(b.icon,b.text,b.p,ab);});
+  document.getElementById('hear-s1').classList.remove('on');document.getElementById('hear-s2').classList.add('on');
+}
+document.getElementById('hear-btn1').addEventListener('click',buildHearSheet);
+document.getElementById('hear-back').addEventListener('click',function(){document.getElementById('hear-s2').classList.remove('on');document.getElementById('hear-s1').classList.add('on');});
+document.getElementById('hear-re').addEventListener('click',function(){hearSel={ind:'',role:'',phase:'',issue:''};initHear();document.getElementById('hear-s2').classList.remove('on');document.getElementById('hear-s1').classList.add('on');});
+
+buildNav();
+</script>
+</body>
+</html>
