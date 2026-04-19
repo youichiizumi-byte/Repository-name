@@ -1,7 +1,4 @@
 module.exports = async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     const message = body.message || body.prompt || JSON.stringify(body);
@@ -19,11 +16,7 @@ module.exports = async function handler(req, res) {
       })
     });
     const text = await response.text();
-    const data = JSON.parse(text);
-    if (!data.content || !data.content[0]) {
-      return res.status(500).json({ error: 'API応答が不正です', raw: text });
-    }
-    res.status(200).json({ reply: data.content[0].text });
+    res.status(200).send(text);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
