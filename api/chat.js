@@ -1,7 +1,11 @@
 module.exports = async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    const message = body.message || body.prompt || JSON.stringify(body);
+    const system = body.system || '';
+    const messages = body.messages || [{ role: 'user', content: body.message || '' }];
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -11,12 +15,14 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 1024,
-        messages: [{ role: 'user', content: message }]
+        max_tokens: 2000,
+        system: system,
+        messages: messages
       })
     });
-    const text = await response.text();
-    res.status(200).send(text);
+    const data = await response.json();
+    if (data.error) return res.status(500).json({ error: data.error.message });
+    res.status(200).json({ content: data.content[0].text });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
