@@ -1,47 +1,30 @@
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
-
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return res.status(500).json({ error: 'API key not configured' });
-  }
-
-  const { messages, system } = req.body;
-
   try {
+    const { message } = req.body;
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 2000,
-        system: system || 'あなたは高橋浩一氏の「営業の科学」に精通した営業コンサルタントです。実践的で具体的なアドバイスを日本語で提供してください。',
-        messages: messages,
-      }),
+        max_tokens: 1024,
+        messages: [{ role: 'user', content: message }]
+      })
     });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      return res.status(response.status).json({ error: data.error?.message || 'API error' });
+    const text = await response.text();
+    console.log('API response:', text);
+    const data = JSON.parse(text);
+    if (!data.content || !data.content[0]) {
+      return res.status(500).json({ error: 'API応答が不正です', raw: text });
     }
-
-    return res.status(200).json({ content: data.content[0].text });
+    res.status(200).json({ reply: data.content[0].text });
   } catch (error) {
-    return res.status(500).json({ error: 'Server error: ' + error.message });
+    res.status(500).json({ error: error.message });
   }
 }
