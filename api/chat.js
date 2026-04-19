@@ -3,7 +3,8 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
   try {
-    const { message } = req.body;
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    const message = body.message || body.prompt || JSON.stringify(body);
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -18,7 +19,6 @@ export default async function handler(req, res) {
       })
     });
     const text = await response.text();
-    console.log('API response:', text);
     const data = JSON.parse(text);
     if (!data.content || !data.content[0]) {
       return res.status(500).json({ error: 'API応答が不正です', raw: text });
