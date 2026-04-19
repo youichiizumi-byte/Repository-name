@@ -1,1 +1,10 @@
-{}
+{
+  "functions": {
+    "API/chat.js": {
+      "runtime": "edge"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/chat", "destination": "/API/chat" }
+  ]
+}
