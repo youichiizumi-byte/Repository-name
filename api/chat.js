@@ -17,7 +17,12 @@ export default async function handler(req, res) {
         messages: [{ role: 'user', content: message }]
       })
     });
-    const data = await response.json();
+    const text = await response.text();
+    console.log('API response:', text);
+    const data = JSON.parse(text);
+    if (!data.content || !data.content[0]) {
+      return res.status(500).json({ error: 'API応答が不正です', raw: text });
+    }
     res.status(200).json({ reply: data.content[0].text });
   } catch (error) {
     res.status(500).json({ error: error.message });
